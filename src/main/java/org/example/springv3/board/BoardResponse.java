@@ -21,7 +21,6 @@ public class BoardResponse {
             this.content = board.getContent();
         }
     }
-
     @Data
     public static class DetailDTO {
         private Integer id;
@@ -29,11 +28,30 @@ public class BoardResponse {
         private String content;
         private Boolean isOwner;
         private String username;
-        private List<ReplyDTO> replies = new ArrayList<>();
 
-        // DTO를 Entity로 만들면 안된다. (이유)
-        // (1) Lazy Loading하면서 no session 오류
-        // (2) 양방향 매핑때문에 json 만들면서 무한 루프
+        // 댓글들
+        private List<ReplyDTO> replies = new ArrayList<>(); //엔티티 말고 DTO 를 넣어야함. 엔티티 넣으면 레이지로딩? 나옴
+
+
+        public DetailDTO(Board board, User sessionUser) {
+            this.id = board.getId();
+            this.title = board.getTitle();
+            this.content = board.getContent();
+            this.isOwner = false;
+
+            if (sessionUser != null) {
+                if (board.getUser().getId() == sessionUser.getId()) {
+                    isOwner = true; // 권한체크
+
+                }
+            }
+            this.username = board.getUser().getUsername();
+
+            for (Reply reply : board.getReplies()) {
+                replies.add(new ReplyDTO(reply, sessionUser));
+            }
+        }
+
         @Data
         class ReplyDTO {
             private Integer id;
@@ -52,24 +70,6 @@ public class BoardResponse {
                         isOwner = true; // 권한체크
                     }
                 }
-            }
-        }
-
-        public DetailDTO(Board board, User sessionUser) {
-            this.id = board.getId();
-            this.title = board.getTitle();
-            this.content = board.getContent();
-            this.isOwner = false;
-
-            if (sessionUser != null) {
-                if (board.getUser().getId() == sessionUser.getId()) {
-                    isOwner = true; // 권한체크
-                }
-            }
-            this.username = board.getUser().getUsername();
-
-            for (Reply reply : board.getReplies()) {
-                replies.add(new ReplyDTO(reply, sessionUser));
             }
         }
     }

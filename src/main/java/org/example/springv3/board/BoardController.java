@@ -89,14 +89,17 @@ public class BoardController {
     }
 
 
-
-
-
     // localhost:8080?title=제목
+    @GetMapping("/board")
+    public ResponseEntity<?> boardList(@RequestParam(name = "title", required = false) String title) {
+        List<BoardResponse.DTO> boardList = boardService.게시글목록보기(title);
+        return ResponseEntity.ok(Resp.ok(boardList));
+    }
+
     @GetMapping("/")
-    //required = false 이걸 넣으면 주소창에 아무것도 안 넣어도 화면이 보인다.
     public String list(@RequestParam(name = "title", required = false) String title, HttpServletRequest request) {
-        List<Board> boardList = boardService.게시글목록보기(title);
+        //  HttpServletRequest request 얘는 가방같은 역할 화면에 뿌리기 위해 담아둠
+        List<BoardResponse.DTO> boardList = boardService.게시글목록보기(title);
         request.setAttribute("models", boardList);
         return "board/list";
     }
